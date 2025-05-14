@@ -1,0 +1,53 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
+    <changeSet id="1" author="jonck">
+        <createSequence sequenceName="foo_seq" startValue="1" incrementBy="1"/>
+        <createTable tableName="foo_sequence_based">
+            <column name="foo_id" type="NUMBER(19,0)">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="foo_id_pk"/>
+            </column>
+            <column name="foo1" type="VARCHAR2(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="foo2" type="VARCHAR2(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="foo3" type="VARCHAR2(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="2" author="jonck">
+        <createTable tableName="customer_history">
+            <column name="pk_hash" type="VARCHAR2(64)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="business_key_hash" type="VARCHAR2(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_hash" type="VARCHAR2(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valid_from" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valid_until" type="TIMESTAMP"/>
+            <column name="ssn" type="VARCHAR2(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="region" type="VARCHAR2(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="VARCHAR2(255)"/>
+            <column name="email" type="VARCHAR2(255)"/>
+        </createTable>
+
+        <createIndex indexName="idx_cust_hist_active" tableName="customer_history">
+            <column name="business_key_hash"/>
+            <column name="valid_until"/>
+        </createIndex>
+    </changeSet>
+</databaseChangeLog>

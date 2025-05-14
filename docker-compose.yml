@@ -1,0 +1,21 @@
+services:
+  oracle:
+    image: gvenzl/oracle-free:slim-faststart
+    restart: unless-stopped
+    ports:
+      - "1521:1521"
+    environment:
+      ORACLE_PASSWORD: oracle
+      APP_USER: experiment
+      APP_USER_PASSWORD: experiment
+    healthcheck:
+      test: ["CMD-SHELL", "echo 'SELECT 1 FROM dual;' | sqlplus experiment/experiment@localhost:1521/FREEPDB1"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 30s
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+
+volumes:
+  oracle-data: {}

@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:oracle:thin:@localhost:1521/FREEPDB1
+    username: experiment
+    password: experiment
+    driverClassName: oracle.jdbc.OracleDriver
+    platform: oracle
+  jpa:
+    database-platform: org.hibernate.dialect.OracleDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+  liquibase:
+    enabled: true
+    change-log: classpath:db/changelog.xml
+
+experiment:
+  total-records: 100000
+  batch-size: 10000
+  simulation-type: sequence
+  change-probability: 0.4
