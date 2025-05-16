@@ -1,5 +1,6 @@
 package com.example.inserts.historic
 
+import com.example.inserts.BATCH_SIZE
 import com.example.inserts.Simulation
 import com.example.inserts.SimulationType
 import com.example.inserts.logger
@@ -13,9 +14,7 @@ class HistoricSimulation(
     @Value("\${experiment.total-records}")
     private val totalRecords: Int,
     @Value("\${experiment.change-probability}")
-    private val changeProbability: Double,
-    @Value("\${experiment.batch-size}")
-    private val batchSize: Int
+    private val changeProbability: Double
 ) : Simulation {
     companion object {
         private val logger = logger()
@@ -24,7 +23,7 @@ class HistoricSimulation(
     override val type = SimulationType.HISTORIC
 
     override fun run() {
-        logger.info("[historic] Starting: totalRecords=$totalRecords, batchSize=$batchSize, changeProbability=$changeProbability")
+        logger.info("[historic] Starting: totalRecords=$totalRecords, batchSize=$BATCH_SIZE, changeProbability=$changeProbability")
 
         val businessKeys = (1..100).map { idx ->
             "%09d".format(idx) to listOf("EU", "US", "APAC").random()
@@ -55,7 +54,7 @@ class HistoricSimulation(
 
         eventSeq
             .take(totalRecords)
-            .chunked(batchSize)
+            .chunked(BATCH_SIZE)
             .forEachIndexed { batchIndex, batch ->
                 val batchTimeMs = service.batchUpsert(batch) / 1_000_000
                 logger.info("[historic] batch=${batchIndex + 1} size=${batch.size} timeMs=$batchTimeMs")

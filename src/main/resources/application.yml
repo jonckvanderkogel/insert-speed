@@ -4,11 +4,12 @@ spring:
     username: experiment
     password: experiment
     driverClassName: oracle.jdbc.OracleDriver
-    platform: oracle
   jpa:
-    database-platform: org.hibernate.dialect.OracleDialect
     hibernate:
       ddl-auto: none
+      id:
+        new_generator_mappings: true
+        optimizer.pooled.preferred: pooled-lo
     show-sql: false
   liquibase:
     enabled: true
@@ -16,6 +17,5 @@ spring:
 
 experiment:
   total-records: 100000
-  batch-size: 10000
   simulation-type: sequence
   change-probability: 0.4

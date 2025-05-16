@@ -18,15 +18,8 @@ class SimulationDispatcher(
             ?.first()
             ?: SimulationType.SEQUENCE.name
 
-        val simType = try {
-            SimulationType.valueOf(typeArg.uppercase())
-        } catch (_: IllegalArgumentException) {
-            logger.warn("Unknown simulation type='$typeArg'. Defaulting to SEQUENCE")
-            SimulationType.SEQUENCE
-        }
-
-        val selected = simulations.find { it.type == simType }
-            ?: error("No simulation found for type=$simType")
+        val selected = simulations.find { it.type == SimulationType.fromString(typeArg) }
+            ?: error("No simulation found for type=$typeArg")
 
         logger.info("Dispatching to simulation type='${selected.type}'")
         selected.run()

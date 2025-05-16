@@ -3,7 +3,7 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
     <changeSet id="1" author="jonck">
-        <createSequence sequenceName="foo_seq" startValue="1" incrementBy="1"/>
+        <createSequence sequenceName="foo_seq" startValue="1" incrementBy="10000" cacheSize="10000"/>
         <createTable tableName="foo_sequence_based">
             <column name="foo_id" type="NUMBER(19,0)">
                 <constraints primaryKey="true" nullable="false" primaryKeyName="foo_id_pk"/>
@@ -48,6 +48,9 @@
         <createIndex indexName="idx_cust_hist_active" tableName="customer_history">
             <column name="business_key_hash"/>
             <column name="valid_until"/>
+        </createIndex>
+        <createIndex indexName="idx_content_hash" tableName="customer_history">
+            <column name="content_hash"/>
         </createIndex>
     </changeSet>
 </databaseChangeLog>

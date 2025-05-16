@@ -1,5 +1,6 @@
 package com.example.inserts.sequencebased
 
+import com.example.inserts.BATCH_SIZE
 import com.example.inserts.Simulation
 import com.example.inserts.SimulationType.SEQUENCE
 import com.example.inserts.logger
@@ -10,9 +11,7 @@ import org.springframework.stereotype.Component
 class SequenceSimulation(
     private val service: FooSequenceBasedService,
     @Value("\${experiment.total-records}")
-    private val totalRecords: Int,
-    @Value("\${experiment.batch-size}")
-    private val batchSize: Int
+    private val totalRecords: Int
 ) : Simulation {
     companion object {
         private val logger = logger()
@@ -21,20 +20,20 @@ class SequenceSimulation(
     override val type = SEQUENCE
 
     override fun run() {
-        logger.info("[sequence] Starting: totalRecords=$totalRecords, batchSize=$batchSize")
+        logger.info("[sequence] Starting: totalRecords=$totalRecords, batchSize=$BATCH_SIZE")
 
         val startTime = System.nanoTime()
 
         generateSequence { randomFoo() }
             .take(totalRecords)
-            .chunked(batchSize)
+            .chunked(BATCH_SIZE)
             .forEachIndexed { index, batch ->
                 val batchTimeMs = service.batchInsert(batch) / 1_000_000
-                logger.info("Inserted batch=${index + 1} size=${batch.size} timeMs=$batchTimeMs")
+                logger.info("[sequence] batch=${index + 1} size=${batch.size} timeMs=$batchTimeMs")
             }
 
         val totalTimeMs = (System.nanoTime() - startTime) / 1_000_000
-        logger.info("Simulation complete: inserted=$totalRecords totalTimeMs=$totalTimeMs ms")
+        logger.info("[sequence] Complete: inserted=$totalRecords totalTimeMs=$totalTimeMs ms")
     }
 
     private fun randomFoo(): FooSequenceBased =

@@ -6,5 +6,13 @@ interface Simulation {
 }
 
 enum class SimulationType {
-    SEQUENCE, HISTORIC
+    SEQUENCE, HISTORIC;
+
+    companion object {
+        fun fromString(type: String): SimulationType = entries
+            .find {
+                it.name.equals(type, ignoreCase = true)
+            }
+            ?: SEQUENCE
+    }
 }

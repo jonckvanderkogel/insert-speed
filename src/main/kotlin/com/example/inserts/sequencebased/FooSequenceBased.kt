@@ -13,7 +13,7 @@ import jakarta.persistence.Table
 data class FooSequenceBased(
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "foo_seq")
-    @SequenceGenerator(name = "foo_seq", sequenceName = "foo_seq", allocationSize = 1)
+    @SequenceGenerator(name = "foo_seq", sequenceName = "foo_seq", allocationSize = 10000)
     @Column(name = "foo_id", nullable = false)
     val fooId: Long? = null,
 
