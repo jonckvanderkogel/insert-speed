@@ -32,9 +32,9 @@ class SequenceSimulation(
             .map { createBatch(batchSize) }
             .mapIndexed { index, batch ->
                 val result = persistBatch(batch)
-                logger.info("[sequence] batch=${index + 1} completed: persisted ${batch.foos.size} Foos, ${batch.bars.size} Bars, ${result.second} links, timeMs=${result.first / 1_000_000}")
+                logger.info("[sequence] batch=${index + 1} completed: persisted ${result.foosPersisted} Foos, ${result.barsPersisted} Bars, ${result.fooBarsPersisted} links, timeMs=${result.howLongInMs}")
 
-                batch.foos.size + batch.bars.size + result.second
+                result.totalPersisted()
             }
             .sum()
 
@@ -47,7 +47,7 @@ class SequenceSimulation(
         val bars: List<Bar>
     )
 
-    fun createBatch(size: Int): Batch {
+    private fun createBatch(size: Int): Batch {
         val foos = List(size) { idx ->
             Foo(
                 foo1 = "foo1-${Random.nextInt()}",
@@ -68,7 +68,7 @@ class SequenceSimulation(
         return Batch(foos, bars)
     }
 
-    fun persistBatch(batch: Batch): Pair<Long, Int> {
+    private fun persistBatch(batch: Batch): PersistInfo {
         val foosSaved = batch.foos
             .let { fooService.batchInsert(it) }
 
@@ -85,9 +85,20 @@ class SequenceSimulation(
 
         val fooBarsSaved = fooBarService.batchInsert(links, batchSize)
 
-        return Pair(
-            foosSaved.first + barsSaved.first + fooBarsSaved.first,
-            fooBarsSaved.second
+        return PersistInfo(
+            foosSaved.second.size,
+            barsSaved.second.size,
+            fooBarsSaved.second,
+            (foosSaved.first + barsSaved.first + fooBarsSaved.first) / 1_000_000
         )
+    }
+
+    private data class PersistInfo(
+        val foosPersisted: Int,
+        val barsPersisted: Int,
+        val fooBarsPersisted: Int,
+        val howLongInMs: Long
+    ) {
+        fun totalPersisted(): Int = foosPersisted + barsPersisted + fooBarsPersisted
     }
 }
