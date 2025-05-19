@@ -2,4 +2,4 @@ package com.example.inserts.sequencebased
 
 import org.springframework.data.jpa.repository.JpaRepository
 
-interface FooSequenceBasedRepository : JpaRepository<FooSequenceBased, Long>
+interface FooRepository : JpaRepository<Foo, Long>

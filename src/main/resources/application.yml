@@ -10,6 +10,11 @@ spring:
       id:
         new_generator_mappings: true
         optimizer.pooled.preferred: pooled-lo
+      properties:
+        hibernate.jdbc.batch_size: ${experiment.batch-size}
+        hibernate.order_inserts: true
+        hibernate.order_updates: true
+        hibernate.jdbc.batch_versioned_data: true
     show-sql: false
   liquibase:
     enabled: true
@@ -17,5 +22,6 @@ spring:
 
 experiment:
   total-records: 100000
+  batch-size: 10000
   simulation-type: sequence
   change-probability: 0.4

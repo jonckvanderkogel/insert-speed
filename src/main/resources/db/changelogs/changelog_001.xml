@@ -4,7 +4,9 @@
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
     <changeSet id="1" author="jonck">
         <createSequence sequenceName="foo_seq" startValue="1" incrementBy="10000" cacheSize="10000"/>
-        <createTable tableName="foo_sequence_based">
+        <createSequence sequenceName="bar_seq" startValue="1" incrementBy="10000" cacheSize="10000"/>
+        <createSequence sequenceName="foo_bar_seq" startValue="1" incrementBy="10000" cacheSize="10000"/>
+        <createTable tableName="foo">
             <column name="foo_id" type="NUMBER(19,0)">
                 <constraints primaryKey="true" nullable="false" primaryKeyName="foo_id_pk"/>
             </column>
@@ -18,6 +20,27 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+        <createTable tableName="bar">
+            <column name="bar_id" type="NUMBER(19,0)">
+                <constraints primaryKey="true" nullable="false" primaryKeyName="bar_id_pk"/>
+            </column>
+            <column name="bar1" type="VARCHAR2(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bar2" type="VARCHAR2(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bar3" type="VARCHAR2(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <createTable tableName="foo_x_bar">
+            <column name="foo_id" type="NUMBER(19,0)"/>
+            <column name="bar_id" type="NUMBER(19,0)"/>
+        </createTable>
+        <addPrimaryKey tableName="foo_x_bar" columnNames="foo_id,bar_id" constraintName="foo_id_bar_id_pk" />
+        <addForeignKeyConstraint baseColumnNames="foo_id" baseTableName="foo_x_bar" constraintName="foo_id_foo_x_bar" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="foo_id" referencedTableName="foo"/>
+        <addForeignKeyConstraint baseColumnNames="bar_id" baseTableName="foo_x_bar" constraintName="bar_id_foo_x_bar" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="bar_id" referencedTableName="bar"/>
     </changeSet>
 
     <changeSet id="2" author="jonck">
