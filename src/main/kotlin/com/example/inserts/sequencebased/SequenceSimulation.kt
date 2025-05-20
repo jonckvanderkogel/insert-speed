@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.withIndex
 import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import kotlin.math.max
 import kotlin.random.Random
 
 @Component
@@ -104,7 +105,7 @@ class SequenceSimulation(
             foosPersisted = foosSaved.size,
             barsPersisted = barsSaved.size,
             fooBarsPersisted = linksWritten,
-            howLongInMs = (fooTimeNs + barTimeNs + linksTimeNs) / 1_000_000,
+            howLongInMs = (max(fooTimeNs, barTimeNs) + linksTimeNs) / 1_000_000,
         )
     }
 
