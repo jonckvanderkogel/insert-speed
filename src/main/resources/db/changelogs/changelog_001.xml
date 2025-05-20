@@ -3,9 +3,9 @@
                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.27.xsd">
     <changeSet id="1" author="jonck">
-        <createSequence sequenceName="foo_seq" startValue="1" incrementBy="10000" cacheSize="10000"/>
-        <createSequence sequenceName="bar_seq" startValue="1" incrementBy="10000" cacheSize="10000"/>
-        <createSequence sequenceName="foo_bar_seq" startValue="1" incrementBy="10000" cacheSize="10000"/>
+        <createSequence sequenceName="foo_seq" startValue="1" incrementBy="1000" cacheSize="1000"/>
+        <createSequence sequenceName="bar_seq" startValue="1" incrementBy="1000" cacheSize="1000"/>
+        <createSequence sequenceName="foo_bar_seq" startValue="1" incrementBy="1000" cacheSize="1000"/>
         <createTable tableName="foo">
             <column name="foo_id" type="NUMBER(19,0)">
                 <constraints primaryKey="true" nullable="false" primaryKeyName="foo_id_pk"/>

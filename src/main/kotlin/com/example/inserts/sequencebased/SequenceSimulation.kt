@@ -3,6 +3,14 @@ package com.example.inserts.sequencebased
 import com.example.inserts.Simulation
 import com.example.inserts.SimulationType.SEQUENCE
 import com.example.inserts.logger
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.reduce
+import kotlinx.coroutines.flow.withIndex
+import kotlinx.coroutines.withContext
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import kotlin.random.Random
@@ -23,20 +31,26 @@ class SequenceSimulation(
 
     override val type = SEQUENCE
 
-    override fun run() {
+    override suspend fun run() {
         logger.info("[sequence] Starting: totalRecords=$totalRecords, batchSize=$batchSize")
 
         val startTime = System.nanoTime()
 
-        val totalInserts = (1..(totalRecords / batchSize)).asSequence()
-            .map { createBatch(batchSize) }
-            .mapIndexed { index, batch ->
-                val result = persistBatch(batch)
-                logger.info("[sequence] batch=${index + 1} completed: persisted ${result.foosPersisted} Foos, ${result.barsPersisted} Bars, ${result.fooBarsPersisted} links, timeMs=${result.howLongInMs}")
-
+        val totalInserts = (0 until totalRecords / batchSize).asFlow()
+            .map { createBatch(batchSize) }                 // regular (non-suspending) map
+            .withIndex()                                    // adds the index
+            .map { (index, batch) ->                        // ← suspending map
+                val result = persistBatchParallel(batch)
+                logger.info(
+                    "[sequence] batch=${index + 1} completed: " +
+                            "persisted ${result.foosPersisted} Foos, " +
+                            "${result.barsPersisted} Bars, " +
+                            "${result.fooBarsPersisted} links, " +
+                            "timeMs=${result.howLongInMs}"
+                )
                 result.totalPersisted()
             }
-            .sum()
+            .reduce(Int::plus)
 
         val totalTimeMs = (System.nanoTime() - startTime) / 1_000_000
         logger.info("[sequence] Complete: inserted=$totalInserts totalTimeMs=$totalTimeMs ms")
@@ -68,30 +82,38 @@ class SequenceSimulation(
         return Batch(foos, bars)
     }
 
-    private fun persistBatch(batch: Batch): PersistInfo {
-        val foosSaved = batch.foos
-            .let { fooService.batchInsert(it) }
+    private suspend fun persistBatchParallel(batch: Batch): PersistInfo = coroutineScope {
 
-        val barsSaved = batch.bars
-            .let { barService.batchInsert(it) }
-
-        val links = foosSaved.second.flatMap { foo ->
-            barsSaved.second.shuffled()
-                .take(Random.nextInt(1, 3))
-                .map { bar ->
-                    Pair(foo.fooId!!, bar.barId!!)
-                }
+        val foosDeferred = async(Dispatchers.IO) {
+            fooService.batchInsert(batch.foos)
+        }
+        val barsDeferred = async(Dispatchers.IO) {
+            barService.batchInsert(batch.bars)
         }
 
-        val fooBarsSaved = fooBarService.batchInsert(links, batchSize)
+        val (fooTimeNs, foosSaved) = foosDeferred.await()
+        val (barTimeNs, barsSaved) = barsDeferred.await()
 
-        return PersistInfo(
-            foosSaved.second.size,
-            barsSaved.second.size,
-            fooBarsSaved.second,
-            (foosSaved.first + barsSaved.first + fooBarsSaved.first) / 1_000_000
+
+        val linkPairs = buildLinks(foosSaved, barsSaved)
+        val (linksTimeNs, linksWritten) = withContext(Dispatchers.IO) {
+            fooBarService.batchInsert(linkPairs, batchSize)
+        }
+
+        PersistInfo(
+            foosPersisted = foosSaved.size,
+            barsPersisted = barsSaved.size,
+            fooBarsPersisted = linksWritten,
+            howLongInMs = (fooTimeNs + barTimeNs + linksTimeNs) / 1_000_000,
         )
     }
+
+    private fun buildLinks(foos: List<Foo>, bars: List<Bar>): List<Pair<Long, Long>> =
+        foos.flatMap { foo ->
+            bars.shuffled()
+                .take(Random.nextInt(1, 3))
+                .map { bar -> foo.id to bar.id }
+        }
 
     private data class PersistInfo(
         val foosPersisted: Int,

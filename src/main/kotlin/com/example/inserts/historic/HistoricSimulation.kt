@@ -23,7 +23,7 @@ class HistoricSimulation(
 
     override val type = SimulationType.HISTORIC
 
-    override fun run() {
+    override suspend fun run() {
         logger.info("[historic] Starting: totalRecords=$totalRecords, batchSize=$batchSize, changeProbability=$changeProbability")
 
         val businessKeys = (1..100).map { idx ->

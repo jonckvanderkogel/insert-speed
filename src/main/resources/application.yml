@@ -22,6 +22,6 @@ spring:
 
 experiment:
   total-records: 100000
-  batch-size: 10000
+  batch-size: 1000
   simulation-type: sequence
   change-probability: 0.4

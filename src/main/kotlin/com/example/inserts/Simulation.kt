@@ -2,7 +2,7 @@ package com.example.inserts
 
 interface Simulation {
     val type: SimulationType
-    fun run()
+    suspend fun run()
 }
 
 enum class SimulationType {

@@ -14,7 +14,7 @@ import jakarta.persistence.Table
 class Foo(
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "foo_seq")
-    @SequenceGenerator(name = "foo_seq", sequenceName = "foo_seq", allocationSize = 10000)
+    @SequenceGenerator(name = "foo_seq", sequenceName = "foo_seq", allocationSize = 1000)
     @Column(name = "foo_id", nullable = false)
     var fooId: Long? = null,
 
@@ -30,3 +30,6 @@ class Foo(
     @OneToMany(mappedBy = "foo")
     val fooBars: Set<FooBar>
 )
+
+inline val Foo.id: Long
+    get() = fooId ?: error("Foo must be persisted before its id is used")

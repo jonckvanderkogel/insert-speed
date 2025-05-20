@@ -1,5 +1,6 @@
 package com.example.inserts
 
+import kotlinx.coroutines.runBlocking
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
@@ -22,6 +23,8 @@ class SimulationDispatcher(
             ?: error("No simulation found for type=$typeArg")
 
         logger.info("Dispatching to simulation type='${selected.type}'")
-        selected.run()
+        runBlocking {
+            selected.run()      // suspends until the simulation is completely done
+        }
     }
 }
