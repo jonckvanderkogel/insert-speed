@@ -107,7 +107,9 @@
             <column name="content_hash"/>
         </createIndex>
         <createIndex indexName="idx_foo_bk1_bk2" tableName="foo_historic">
-            <column name="bk1, bk2, valid_until"/>
+            <column name="bk1"/>
+            <column name="bk2"/>
+            <column name="valid_until"/>
         </createIndex>
 
         <createTable tableName="bar_historic">
@@ -140,7 +142,9 @@
             <column name="content_hash"/>
         </createIndex>
         <createIndex indexName="idx_bar_bk1_bk2" tableName="bar_historic">
-            <column name="bk1, bk2, valid_until"/>
+            <column name="bk1"/>
+            <column name="bk2"/>
+            <column name="valid_until"/>
         </createIndex>
 
         <createTable tableName="foo_historic_x_bar_historic">
@@ -152,5 +156,212 @@
         <addPrimaryKey tableName="foo_historic_x_bar_historic" columnNames="foo_business_key_hash,bar_business_key_hash,foo_valid_from,bar_valid_from" constraintName="foo_historic_x_bar_historic_pk" />
         <addForeignKeyConstraint baseColumnNames="foo_business_key_hash,foo_valid_from" baseTableName="foo_historic_x_bar_historic" constraintName="foo_historic_x_bar_historic_foo_historic" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="business_key_hash,valid_from" referencedTableName="foo_historic"/>
         <addForeignKeyConstraint baseColumnNames="bar_business_key_hash,bar_valid_from" baseTableName="foo_historic_x_bar_historic" constraintName="foo_historic_x_bar_historic_bar_historic" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="business_key_hash,valid_from" referencedTableName="bar_historic"/>
+    </changeSet>
+    <changeSet id="4" author="jonck" runOnChange="true" dbms="oracle">
+        <sql>
+            CREATE OR REPLACE TYPE foo_hist_in_rec AS OBJECT (
+            bk1 VARCHAR2(20),
+            bk2 VARCHAR2(20),
+            c1  VARCHAR2(255),
+            c2  VARCHAR2(255)
+            )
+        </sql>
+
+        <sql>
+            CREATE OR REPLACE TYPE foo_hist_in_tab AS TABLE OF foo_hist_in_rec
+        </sql>
+
+        <sql>
+            CREATE OR REPLACE TYPE bar_hist_in_rec AS OBJECT (
+            bk1 VARCHAR2(20),
+            bk2 VARCHAR2(20),
+            c1  VARCHAR2(255),
+            c2  VARCHAR2(255)
+            )
+        </sql>
+
+        <sql>
+            CREATE OR REPLACE TYPE bar_hist_in_tab AS TABLE OF bar_hist_in_rec
+        </sql>
+
+        <sql>
+            CREATE OR REPLACE TYPE link_key_rec AS OBJECT (
+            foo_bk1 VARCHAR2(20),
+            foo_bk2 VARCHAR2(20),
+            bar_bk1 VARCHAR2(20),
+            bar_bk2 VARCHAR2(20)
+            )
+        </sql>
+
+        <sql>
+            CREATE OR REPLACE TYPE link_key_tab AS TABLE OF link_key_rec
+        </sql>
+
+        <sql splitStatements="false" endDelimiter="/">
+            CREATE OR REPLACE PROCEDURE upsert_foo_hist_bulk (
+            p_rep_date IN DATE,
+            p_in       IN foo_hist_in_tab
+            ) IS
+            v_old_hash VARCHAR2(64);
+            v_new_hash VARCHAR2(64);
+            v_bk_hash  VARCHAR2(64);
+            BEGIN
+            FOR i IN 1 .. p_in.COUNT LOOP
+            SELECT STANDARD_HASH(p_in(i).c1||'|'||p_in(i).c2,'SHA256'),
+            STANDARD_HASH(p_in(i).bk1||'|'||p_in(i).bk2,'SHA256')
+            INTO v_new_hash, v_bk_hash
+            FROM dual;
+
+            SELECT MIN(content_hash)
+            INTO v_old_hash
+            FROM foo_historic
+            WHERE business_key_hash = v_bk_hash
+            AND valid_until IS NULL;
+
+            IF v_old_hash IS NULL THEN
+            INSERT INTO foo_historic (
+            business_key_hash, content_hash,
+            valid_from, valid_until,
+            bk1, bk2, c1, c2 )
+            VALUES (
+            v_bk_hash, v_new_hash,
+            p_rep_date, NULL,
+            p_in(i).bk1, p_in(i).bk2,
+            p_in(i).c1,  p_in(i).c2 );
+
+            ELSIF v_old_hash != v_new_hash THEN
+            UPDATE foo_historic
+            SET valid_until = p_rep_date
+            WHERE business_key_hash = v_bk_hash
+            AND valid_until IS NULL;
+
+            INSERT INTO foo_historic (
+            business_key_hash, content_hash,
+            valid_from, valid_until,
+            bk1, bk2, c1, c2 )
+            VALUES (
+            v_bk_hash, v_new_hash,
+            p_rep_date, NULL,
+            p_in(i).bk1, p_in(i).bk2,
+            p_in(i).c1,  p_in(i).c2 );
+            END IF;
+            END LOOP;
+            END upsert_foo_hist_bulk;
+            /
+        </sql>
+
+        <sql splitStatements="false" endDelimiter="/">
+            CREATE OR REPLACE PROCEDURE upsert_bar_hist_bulk (
+            p_rep_date IN DATE,
+            p_in       IN bar_hist_in_tab
+            ) IS
+            v_old_hash VARCHAR2(64);
+            v_new_hash VARCHAR2(64);
+            v_bk_hash  VARCHAR2(64);
+            BEGIN
+            FOR i IN 1 .. p_in.COUNT LOOP
+            SELECT STANDARD_HASH(p_in(i).c1||'|'||p_in(i).c2,'SHA256'),
+            STANDARD_HASH(p_in(i).bk1||'|'||p_in(i).bk2,'SHA256')
+            INTO v_new_hash, v_bk_hash
+            FROM dual;
+
+            SELECT MIN(content_hash)
+            INTO v_old_hash
+            FROM bar_historic
+            WHERE business_key_hash = v_bk_hash
+            AND valid_until IS NULL;
+
+            IF v_old_hash IS NULL THEN
+            INSERT INTO bar_historic (
+            business_key_hash, content_hash,
+            valid_from, valid_until,
+            bk1, bk2, c1, c2 )
+            VALUES (
+            v_bk_hash, v_new_hash,
+            p_rep_date, NULL,
+            p_in(i).bk1, p_in(i).bk2,
+            p_in(i).c1,  p_in(i).c2 );
+
+            ELSIF v_old_hash != v_new_hash THEN
+            UPDATE bar_historic
+            SET valid_until = p_rep_date
+            WHERE business_key_hash = v_bk_hash
+            AND valid_until IS NULL;
+
+            INSERT INTO bar_historic (
+            business_key_hash, content_hash,
+            valid_from, valid_until,
+            bk1, bk2, c1, c2 )
+            VALUES (
+            v_bk_hash, v_new_hash,
+            p_rep_date, NULL,
+            p_in(i).bk1, p_in(i).bk2,
+            p_in(i).c1,  p_in(i).c2 );
+            END IF;
+            END LOOP;
+            END upsert_bar_hist_bulk;
+            /
+        </sql>
+
+        <sql splitStatements="false" endDelimiter="/">
+            CREATE OR REPLACE PROCEDURE upsert_links_bulk (
+            p_keys     IN link_key_tab
+            ) IS
+            v_foo_hash VARCHAR2(64);
+            v_bar_hash VARCHAR2(64);
+            v_foo_from DATE;
+            v_bar_from DATE;
+            BEGIN
+            FOR i IN 1 .. p_keys.COUNT LOOP
+            /* live Foo */
+            SELECT business_key_hash, valid_from
+            INTO v_foo_hash, v_foo_from
+            FROM foo_historic
+            WHERE bk1 = p_keys(i).foo_bk1
+            AND bk2 = p_keys(i).foo_bk2
+            AND valid_until IS NULL;
+
+            /* live Bar */
+            SELECT business_key_hash, valid_from
+            INTO v_bar_hash, v_bar_from
+            FROM bar_historic
+            WHERE bk1 = p_keys(i).bar_bk1
+            AND bk2 = p_keys(i).bar_bk2
+            AND valid_until IS NULL;
+
+            MERGE INTO foo_historic_x_bar_historic t
+            USING (SELECT v_foo_hash AS foo_hash,
+            v_bar_hash AS bar_hash,
+            v_foo_from AS foo_from,
+            v_bar_from AS bar_from
+            FROM dual) src
+            ON ( t.foo_business_key_hash = src.foo_hash
+            AND t.bar_business_key_hash = src.bar_hash
+            AND t.foo_valid_from       = src.foo_from
+            AND t.bar_valid_from       = src.bar_from )
+            WHEN NOT MATCHED THEN
+            INSERT (foo_business_key_hash, bar_business_key_hash,
+            foo_valid_from,       bar_valid_from)
+            VALUES (src.foo_hash, src.bar_hash,
+            src.foo_from, src.bar_from);
+            END LOOP;
+            END upsert_links_bulk;
+            /
+        </sql>
+
+        <rollback>
+            <sql>DROP PROCEDURE upsert_links_bulk</sql>
+            <sql>DROP PROCEDURE upsert_bar_hist_bulk</sql>
+            <sql>DROP PROCEDURE upsert_foo_hist_bulk</sql>
+
+            <sql>DROP TYPE link_key_tab</sql>
+            <sql>DROP TYPE link_key_rec</sql>
+
+            <sql>DROP TYPE bar_hist_in_tab</sql>
+            <sql>DROP TYPE bar_hist_in_rec</sql>
+
+            <sql>DROP TYPE foo_hist_in_tab</sql>
+            <sql>DROP TYPE foo_hist_in_rec</sql>
+        </rollback>
     </changeSet>
 </databaseChangeLog>
