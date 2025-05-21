@@ -23,5 +23,9 @@ spring:
 experiment:
   total-records: 100000
   batch-size: 1000
-  simulation-type: sequence
   change-probability: 0.4
+
+mtm:
+  batch-size: 1000
+  days: 10
+  change-probability: 0.01

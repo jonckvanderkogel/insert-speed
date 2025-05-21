@@ -76,4 +76,81 @@
             <column name="content_hash"/>
         </createIndex>
     </changeSet>
+    <changeSet id="3" author="jonck">
+        <createTable tableName="foo_historic">
+            <column name="business_key_hash" type="VARCHAR2(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_hash" type="VARCHAR2(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valid_from" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valid_until" type="DATE"/>
+            <column name="bk1" type="VARCHAR2(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bk2" type="VARCHAR2(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="c1" type="VARCHAR2(255)"/>
+            <column name="c2" type="VARCHAR2(255)"/>
+        </createTable>
+
+        <addPrimaryKey tableName="foo_historic" columnNames="business_key_hash,valid_from" constraintName="foo_historic_pk" />
+        <createIndex indexName="idx_foo_hist_active" tableName="foo_historic">
+            <column name="business_key_hash"/>
+            <column name="valid_until"/>
+        </createIndex>
+        <createIndex indexName="idx_foo_content_hash" tableName="foo_historic">
+            <column name="content_hash"/>
+        </createIndex>
+        <createIndex indexName="idx_foo_bk1_bk2" tableName="foo_historic">
+            <column name="bk1, bk2, valid_until"/>
+        </createIndex>
+
+        <createTable tableName="bar_historic">
+            <column name="business_key_hash" type="VARCHAR2(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content_hash" type="VARCHAR2(64)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valid_from" type="DATE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="valid_until" type="DATE"/>
+            <column name="bk1" type="VARCHAR2(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="bk2" type="VARCHAR2(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="c1" type="VARCHAR2(255)"/>
+            <column name="c2" type="VARCHAR2(255)"/>
+        </createTable>
+
+        <addPrimaryKey tableName="bar_historic" columnNames="business_key_hash,valid_from" constraintName="bar_historic_pk" />
+        <createIndex indexName="idx_bar_hist_active" tableName="bar_historic">
+            <column name="business_key_hash"/>
+            <column name="valid_until"/>
+        </createIndex>
+        <createIndex indexName="idx_bar_content_hash" tableName="bar_historic">
+            <column name="content_hash"/>
+        </createIndex>
+        <createIndex indexName="idx_bar_bk1_bk2" tableName="bar_historic">
+            <column name="bk1, bk2, valid_until"/>
+        </createIndex>
+
+        <createTable tableName="foo_historic_x_bar_historic">
+            <column name="foo_business_key_hash" type="VARCHAR2(64)"/>
+            <column name="bar_business_key_hash" type="VARCHAR2(64)"/>
+            <column name="foo_valid_from" type="DATE"/>
+            <column name="bar_valid_from" type="DATE"/>
+        </createTable>
+        <addPrimaryKey tableName="foo_historic_x_bar_historic" columnNames="foo_business_key_hash,bar_business_key_hash,foo_valid_from,bar_valid_from" constraintName="foo_historic_x_bar_historic_pk" />
+        <addForeignKeyConstraint baseColumnNames="foo_business_key_hash,foo_valid_from" baseTableName="foo_historic_x_bar_historic" constraintName="foo_historic_x_bar_historic_foo_historic" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="business_key_hash,valid_from" referencedTableName="foo_historic"/>
+        <addForeignKeyConstraint baseColumnNames="bar_business_key_hash,bar_valid_from" baseTableName="foo_historic_x_bar_historic" constraintName="foo_historic_x_bar_historic_bar_historic" deferrable="false" initiallyDeferred="false" onDelete="CASCADE" onUpdate="CASCADE" referencedColumnNames="business_key_hash,valid_from" referencedTableName="bar_historic"/>
+    </changeSet>
 </databaseChangeLog>

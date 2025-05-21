@@ -6,7 +6,7 @@ interface Simulation {
 }
 
 enum class SimulationType {
-    SEQUENCE, HISTORIC;
+    SEQUENCE, HISTORIC, HISTORIC_MTM;
 
     companion object {
         fun fromString(type: String): SimulationType = entries

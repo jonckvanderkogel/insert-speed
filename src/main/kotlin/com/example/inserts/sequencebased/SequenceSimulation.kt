@@ -46,7 +46,7 @@ class SequenceSimulation(
                     "[sequence] batch=${index + 1} completed: " +
                             "persisted ${result.foosPersisted} Foos, " +
                             "${result.barsPersisted} Bars, " +
-                            "${result.fooBarsPersisted} links, " +
+                            "${result.linksPersisted} links, " +
                             "timeMs=${result.howLongInMs}"
                 )
                 result.totalPersisted()
@@ -85,26 +85,25 @@ class SequenceSimulation(
 
     private suspend fun persistBatchParallel(batch: Batch): PersistInfo = coroutineScope {
 
-        val foosDeferred = async(Dispatchers.IO) {
+        val (fooTimeNs, foosSaved) = async(Dispatchers.IO) {
             fooService.batchInsert(batch.foos)
-        }
-        val barsDeferred = async(Dispatchers.IO) {
+        }.await()
+
+        val (barTimeNs, barsSaved) = async(Dispatchers.IO) {
             barService.batchInsert(batch.bars)
-        }
+        }.await()
 
-        val (fooTimeNs, foosSaved) = foosDeferred.await()
-        val (barTimeNs, barsSaved) = barsDeferred.await()
-
-
-        val linkPairs = buildLinks(foosSaved, barsSaved)
         val (linksTimeNs, linksWritten) = withContext(Dispatchers.IO) {
-            fooBarService.batchInsert(linkPairs, batchSize)
+            fooBarService.batchInsert(
+                buildLinks(foosSaved, barsSaved),
+                batchSize
+            )
         }
 
         PersistInfo(
             foosPersisted = foosSaved.size,
             barsPersisted = barsSaved.size,
-            fooBarsPersisted = linksWritten,
+            linksPersisted = linksWritten,
             howLongInMs = (max(fooTimeNs, barTimeNs) + linksTimeNs) / 1_000_000,
         )
     }
@@ -119,9 +118,9 @@ class SequenceSimulation(
     private data class PersistInfo(
         val foosPersisted: Int,
         val barsPersisted: Int,
-        val fooBarsPersisted: Int,
+        val linksPersisted: Int,
         val howLongInMs: Long
     ) {
-        fun totalPersisted(): Int = foosPersisted + barsPersisted + fooBarsPersisted
+        fun totalPersisted(): Int = foosPersisted + barsPersisted + linksPersisted
     }
 }
