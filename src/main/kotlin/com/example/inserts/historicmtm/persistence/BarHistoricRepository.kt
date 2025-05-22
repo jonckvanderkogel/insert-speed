@@ -26,7 +26,6 @@ class BarHistoricRepository(
               INTO v_new_hash, v_bk_hash
               FROM dual;
   
-            /* live row (if any) */
             SELECT MIN(content_hash)
               INTO v_old_hash
               FROM bar_historic

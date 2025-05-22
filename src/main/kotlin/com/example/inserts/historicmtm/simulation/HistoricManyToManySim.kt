@@ -31,7 +31,6 @@ class HistoricManyToManySim(
     override suspend fun run() = coroutineScope {
         val simStart = System.nanoTime()
 
-        /* ---------- 1. Build static universe -------------------------- */
         val universe = UniverseBuilder.build(days * batchSize, days * batchSize)
         val fooKeys  = universe.fooKeys
         val barKeys  = universe.barKeys
