@@ -3,6 +3,7 @@ package com.example.inserts.sequencebased
 import com.example.inserts.Simulation
 import com.example.inserts.SimulationType.SEQUENCE
 import com.example.inserts.logger
+import jakarta.persistence.EntityManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -24,7 +25,8 @@ class SequenceSimulation(
     @Value("\${sequence.total-records}")
     private val totalRecords: Int,
     @Value("\${sequence.batch-size}")
-    private val batchSize: Int
+    private val batchSize: Int,
+    private val entityManager: EntityManager
 ) : Simulation {
     companion object {
         private val logger = logger()
@@ -102,6 +104,8 @@ class SequenceSimulation(
                 batchSize
             )
         }
+
+        entityManager.clear()
 
         PersistInfo(
             foosPersisted = foosSaved.size,
