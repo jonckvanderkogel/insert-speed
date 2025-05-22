@@ -38,9 +38,9 @@ class SequenceSimulation(
         val startTime = System.nanoTime()
 
         val totalInserts = (0 until totalRecords / batchSize).asFlow()
-            .map { createBatch(batchSize) }                 // regular (non-suspending) map
-            .withIndex()                                    // adds the index
-            .map { (index, batch) ->                        // ← suspending map
+            .map { createBatch(batchSize) }
+            .withIndex()
+            .map { (index, batch) ->
                 val result = persistBatchParallel(batch)
                 logger.info(
                     "[sequence] batch=${index + 1} completed: " +
