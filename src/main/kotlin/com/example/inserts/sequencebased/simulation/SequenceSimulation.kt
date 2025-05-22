@@ -1,8 +1,14 @@
-package com.example.inserts.sequencebased
+package com.example.inserts.sequencebased.simulation
 
 import com.example.inserts.Simulation
-import com.example.inserts.SimulationType.SEQUENCE
+import com.example.inserts.SimulationType
 import com.example.inserts.logger
+import com.example.inserts.sequencebased.persistence.Bar
+import com.example.inserts.sequencebased.persistence.BarService
+import com.example.inserts.sequencebased.persistence.Foo
+import com.example.inserts.sequencebased.persistence.FooBarService
+import com.example.inserts.sequencebased.persistence.FooService
+import com.example.inserts.sequencebased.persistence.id
 import jakarta.persistence.EntityManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -32,7 +38,7 @@ class SequenceSimulation(
         private val logger = logger()
     }
 
-    override val type = SEQUENCE
+    override val type = SimulationType.SEQUENCE
 
     override suspend fun run() {
         logger.info("[sequence] Starting: totalRecords=$totalRecords, batchSize=$batchSize")
@@ -67,17 +73,17 @@ class SequenceSimulation(
     private fun createBatch(size: Int): Batch {
         val foos = List(size) { idx ->
             Foo(
-                foo1 = "foo1-${Random.nextInt()}",
-                foo2 = "foo2-${Random.nextInt()}",
-                foo3 = "foo3-${Random.nextInt()}",
+                foo1 = "foo1-${Random.Default.nextInt()}",
+                foo2 = "foo2-${Random.Default.nextInt()}",
+                foo3 = "foo3-${Random.Default.nextInt()}",
                 fooBars = emptySet()
             )
         }
         val bars = List(size) { idx ->
             Bar(
-                bar1 = "bar1-${Random.nextInt()}",
-                bar2 = "bar2-${Random.nextInt()}",
-                bar3 = "bar3-${Random.nextInt()}",
+                bar1 = "bar1-${Random.Default.nextInt()}",
+                bar2 = "bar2-${Random.Default.nextInt()}",
+                bar3 = "bar3-${Random.Default.nextInt()}",
                 fooBars = emptySet()
             )
         }
@@ -118,7 +124,7 @@ class SequenceSimulation(
     private fun buildLinks(foos: List<Foo>, bars: List<Bar>): List<Pair<Long, Long>> =
         foos.flatMap { foo ->
             bars.shuffled()
-                .take(Random.nextInt(1, 3))
+                .take(Random.Default.nextInt(1, 3))
                 .map { bar -> foo.id to bar.id }
         }
 

@@ -1,5 +1,6 @@
-package com.example.inserts.sequencebased
+package com.example.inserts.sequencebased.persistence
 
+import com.example.inserts.saveAndReturn
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
@@ -8,6 +9,8 @@ import jakarta.persistence.Id
 import jakarta.persistence.OneToMany
 import jakarta.persistence.SequenceGenerator
 import jakarta.persistence.Table
+import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.stereotype.Service
 
 @Entity
 @Table(name = "foo")
@@ -33,3 +36,15 @@ class Foo(
 
 inline val Foo.id: Long
     get() = fooId ?: error("Foo must be persisted before its id is used")
+
+interface FooRepository : JpaRepository<Foo, Long>
+
+@Service
+class FooService(
+    private val repository: FooRepository
+) {
+    fun batchInsert(records: List<Foo>): Pair<Long, List<Foo>> = saveAndReturn(
+        records,
+        repository::saveAll
+    )
+}
