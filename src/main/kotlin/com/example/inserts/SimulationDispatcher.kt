@@ -24,7 +24,7 @@ class SimulationDispatcher(
 
         logger.info("Dispatching to simulation type='${selected.type}'")
         runBlocking {
-            selected.run()      // suspends until the simulation is completely done
+            selected.run()
         }
     }
 }

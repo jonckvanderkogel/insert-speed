@@ -5,8 +5,10 @@ spring:
     password: experiment
     driverClassName: oracle.jdbc.OracleDriver
   jpa:
-    hibernate:
-      ddl-auto: none
+    properties:
+      hibernate:
+        ddl-auto: none
+        jdbc.batch_size: ${sequence.batch-size}
     show-sql: false
   liquibase:
     enabled: true
@@ -18,7 +20,7 @@ sequence:
 
 historic:
   total-records: 100000
-  batch-size: 10000
+  batch-size: 1000
   change-probability: 0.4
 
 mtm:
