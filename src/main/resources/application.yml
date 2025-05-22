@@ -7,22 +7,18 @@ spring:
   jpa:
     hibernate:
       ddl-auto: none
-      id:
-        new_generator_mappings: true
-        optimizer.pooled.preferred: pooled-lo
-      properties:
-        hibernate.jdbc.batch_size: ${experiment.batch-size}
-        hibernate.order_inserts: true
-        hibernate.order_updates: true
-        hibernate.jdbc.batch_versioned_data: true
     show-sql: false
   liquibase:
     enabled: true
     change-log: classpath:db/changelog.xml
 
-experiment:
+sequence:
   total-records: 100000
   batch-size: 1000
+
+historic:
+  total-records: 100000
+  batch-size: 10000
   change-probability: 0.4
 
 mtm:

@@ -21,9 +21,9 @@ class SequenceSimulation(
     private val fooService: FooService,
     private val barService: BarService,
     private val fooBarService: FooBarService,
-    @Value("\${experiment.total-records}")
+    @Value("\${sequence.total-records}")
     private val totalRecords: Int,
-    @Value("\${experiment.batch-size}")
+    @Value("\${sequence.batch-size}")
     private val batchSize: Int
 ) : Simulation {
     companion object {
@@ -85,13 +85,16 @@ class SequenceSimulation(
 
     private suspend fun persistBatchParallel(batch: Batch): PersistInfo = coroutineScope {
 
-        val (fooTimeNs, foosSaved) = async(Dispatchers.IO) {
+        val fooDeferred = async(Dispatchers.IO) {
             fooService.batchInsert(batch.foos)
-        }.await()
+        }
 
-        val (barTimeNs, barsSaved) = async(Dispatchers.IO) {
+        val barDeferred = async(Dispatchers.IO) {
             barService.batchInsert(batch.bars)
-        }.await()
+        }
+
+        val (fooTimeNs, foosSaved) = fooDeferred.await()
+        val (barTimeNs, barsSaved) = barDeferred.await()
 
         val (linksTimeNs, linksWritten) = withContext(Dispatchers.IO) {
             fooBarService.batchInsert(

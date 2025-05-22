@@ -10,11 +10,11 @@ import kotlin.random.Random
 @Component
 class HistoricSimulation(
     private val service: CustomerHistoryRepository,
-    @Value("\${experiment.total-records}")
+    @Value("\${historic.total-records}")
     private val totalRecords: Int,
-    @Value("\${experiment.batch-size}")
+    @Value("\${historic.batch-size}")
     private val batchSize: Int,
-    @Value("\${experiment.change-probability}")
+    @Value("\${historic.change-probability}")
     private val changeProbability: Double
 ) : Simulation {
     companion object {
