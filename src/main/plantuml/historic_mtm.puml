@@ -1,0 +1,56 @@
+@startuml
+'-----------------------------------------------------------------
+' ER-diagram from Liquibase changeSet id="3"
+'-----------------------------------------------------------------
+
+skinparam {
+    linetype ortho
+    Shadowing false
+    ' use a monospaced font so spaces line up
+    ClassAttributeFontName Courier
+}
+
+'========================
+' Historic master tables
+'========================
+entity "foo_historic" as foo_historic {
+    +business_key_hash    : VARCHAR2(64)  <<PK>>
+    +valid_from           : DATE          <<PK>>
+    --
+    content_hash           : VARCHAR2(64)  <<NOT NULL>>
+    valid_until            : DATE
+    bk1                    : VARCHAR2(20)  <<NOT NULL>>
+    bk2                    : VARCHAR2(20)  <<NOT NULL>>
+    c1                     : VARCHAR2(255)
+    c2                     : VARCHAR2(255)
+}
+
+entity "bar_historic" as bar_historic {
+    +business_key_hash    : VARCHAR2(64)  <<PK>>
+    +valid_from           : DATE          <<PK>>
+    --
+    content_hash           : VARCHAR2(64)  <<NOT NULL>>
+    valid_until            : DATE
+    bk1                    : VARCHAR2(20)  <<NOT NULL>>
+    bk2                    : VARCHAR2(20)  <<NOT NULL>>
+    c1                     : VARCHAR2(255)
+    c2                     : VARCHAR2(255)
+}
+
+'========================
+' Link table (many-to-many)
+'========================
+entity "foo_historic_x_bar_historic" as link {
+    +foo_business_key_hash : VARCHAR2(64)  <<PK,FK>>
+    +foo_valid_from        : DATE          <<PK,FK>>
+    +bar_business_key_hash : VARCHAR2(64)  <<PK,FK>>
+    +bar_valid_from        : DATE          <<PK,FK>>
+}
+
+'========================
+' Relationships
+'========================
+foo_historic ||--o{ link : "(foo_business_key_hash, foo_valid_from)"
+bar_historic ||--o{ link : "(bar_business_key_hash, bar_valid_from)"
+
+@enduml

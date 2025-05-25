@@ -18,3 +18,8 @@ To run the simulation where we use historized table structure with a many-to-man
 ```
 mvn clean spring-boot:run -Dspring-boot.run.arguments="--experiment.simulation-type=historic_mtm"
 ```
+
+Generate PlantUML diagrams
+```
+mvn plantuml:generate
+```

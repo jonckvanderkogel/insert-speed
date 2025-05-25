@@ -16,6 +16,7 @@
 	<properties>
 		<java.version>23</java.version>
 		<kotlin.version>2.1.10</kotlin.version>
+		<testcontainers.version>1.21.0</testcontainers.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -55,6 +56,18 @@
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
 			<artifactId>kotlin-test-junit5</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>oracle-free</artifactId>
+			<version>${testcontainers.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<version>${testcontainers.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -97,6 +110,24 @@
 						<version>${kotlin.version}</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>com.github.davidmoten</groupId>
+				<artifactId>plantuml-maven-plugin</artifactId>
+				<version>0.2.12</version>
+				<configuration>
+					<sources>
+						<directory>${basedir}/src/main/plantuml</directory>
+						<includes>
+							<include>**/*.puml</include>
+						</includes>
+					</sources>
+					<outputDirectory>${project.basedir}/diagrams</outputDirectory>
+					<formats>
+						<format>png</format>
+					</formats>
+					<preserveDirectoryStructure>false</preserveDirectoryStructure>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

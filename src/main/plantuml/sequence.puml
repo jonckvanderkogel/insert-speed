@@ -1,0 +1,60 @@
+@startuml
+' ------------------------------------------------------------
+' ER-diagram generated from Liquibase changeSet id="1"
+' ------------------------------------------------------------
+
+skinparam {
+    linetype ortho
+    Shadowing false
+    ' use a monospaced font so spaces line up
+    ClassAttributeFontName Courier
+}
+
+'-------------------------------------------------------------
+' Sequences  (stereotype <<sequence>> makes them stand out)
+'-------------------------------------------------------------
+entity "foo_seq"      as foo_seq      <<sequence>>
+entity "bar_seq"      as bar_seq      <<sequence>>
+
+'-------------------------------------------------------------
+' Main tables
+'-------------------------------------------------------------
+entity "foo" as foo {
+    +foo_id : NUMBER(19,0) <<PK>>
+    --
+    foo1     : VARCHAR2(255)  <<NOT NULL>>
+    foo2     : VARCHAR2(255)  <<NOT NULL>>
+    foo3     : VARCHAR2(255)  <<NOT NULL>>
+}
+
+entity "bar" as bar {
+    +bar_id : NUMBER(19,0) <<PK>>
+    --
+    bar1     : VARCHAR2(255)  <<NOT NULL>>
+    bar2     : VARCHAR2(255)  <<NOT NULL>>
+    bar3     : VARCHAR2(255)  <<NOT NULL>>
+}
+
+'-------------------------------------------------------------
+' Link table for the many-to-many relation
+'-------------------------------------------------------------
+entity "foo_x_bar" as foo_x_bar {
+    +foo_id : NUMBER(19,0) <<PK,FK>>
+    +bar_id : NUMBER(19,0) <<PK,FK>>
+}
+
+'-------------------------------------------------------------
+' Relationships
+'   • one  foo            –< many foo_x_bar   (cascade delete/update)
+'   • one  bar            –< many foo_x_bar   (cascade delete/update)
+'-------------------------------------------------------------
+foo ||--o{ foo_x_bar : "foo_id"
+bar ||--o{ foo_x_bar : "bar_id"
+
+'-------------------------------------------------------------
+' (Optional) show which sequence feeds which table
+'-------------------------------------------------------------
+foo_seq     --> foo       : generates PK
+bar_seq     --> bar       : generates PK
+
+@enduml
