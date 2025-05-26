@@ -1,0 +1,39 @@
+@startuml
+participant "Daily Run\nProcess" as process
+participant "Foo Data" as foo
+participant "Bar Data" as bar
+participant "Link Data" as link
+
+== Initial re-run at 2025-01-15\n(Foo & Bar thought to change) ==
+
+process -> foo : Insert Foo data for 2025-01-15
+foo --> process : Foo data inserted
+
+process -> bar : Insert Bar data for 2025-01-15
+bar --> process : Bar data inserted
+
+process -> link : Create Foo-Bar link (2025-01-15)
+link --> process : Link created
+
+== Second re-run:\nFoo did NOT actually change on 2025-01-15 ==
+
+group Cleanup previous incorrect run
+    process -> link : Delete Foo-Bar link (2025-01-15)
+    link --> process : Link deleted
+
+    process -> foo : Delete incorrect Foo data (2025-01-15)
+    foo --> process : Foo data deleted
+
+    process -> foo : Restore original Foo period\n(valid until 2025-02-01)
+    foo --> process : Foo period restored
+end
+
+== Insert correct data after cleanup ==
+
+process -> bar : Ensure Bar data correct for 2025-01-15\n(no action if correct)
+bar --> process : Bar data already correct
+
+process -> link : Create correct Foo-Bar link\n(Foo from 2025-01-01, Bar from 2025-01-15)
+link --> process : Correct link created
+
+@enduml
